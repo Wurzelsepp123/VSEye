@@ -1,0 +1,16 @@
+﻿<Window x:Class="Masterarbeit.TrackingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"    
+        xmlns:gaze="clr-namespace:SPOCK.UIElements;assembly=EyeMovementUIElements"           
+        Title="TrackingWindow" Width="1920" Height="1200" ResizeMode="NoResize" WindowStyle="None"
+         WindowState="Maximized"
+        >
+    <gaze:EyeMovementCanvas x:Name="MainCanvas" Background="#FF490000" >
+        <TextBox x:Name="ParticipantID_textBox" Height="131" Canvas.Left="773" TextWrapping="Wrap" Text="" Canvas.Top="221" Width="354" BorderThickness="0" FontSize="80" FontWeight="Bold" TextAlignment="Center" />
+      
+    </gaze:EyeMovementCanvas>
+    <Window.Resources>
+        <Ellipse x:Key="GazeMarker" Width="15" Height="15" Fill="Blue" />
+        
+    </Window.Resources>
+</Window>

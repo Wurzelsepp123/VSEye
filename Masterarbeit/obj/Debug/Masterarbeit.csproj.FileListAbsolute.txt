@@ -1,0 +1,6 @@
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\Debug\MainWindow.g.cs
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\Debug\App.g.cs
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\Debug\Masterarbeit_Content.g.cs
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\Debug\Masterarbeit_MarkupCompile.cache
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\Debug\Masterarbeit_MarkupCompile.lref
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\bin\Debug\Masterarbeit.exe.config
