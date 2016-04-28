@@ -19,7 +19,8 @@ namespace Masterarbeit
     /// </summary>
     public partial class MainWindow : Window
     {
-        start starter = new start();
+        //start starter = new start();
+        public bool useVM;
         public MainWindow()
         {
             InitializeComponent();
@@ -40,15 +41,16 @@ namespace Masterarbeit
         {
             // Use IsChecked.
             bool flag = checkBox.IsChecked.Value;
-            starter.removeErrors = flag;
+           // starter.removeErrors = flag;
         }
 
         private async void start_button_Click(object sender, RoutedEventArgs e)
         {
             start_button.IsEnabled = false;
             stop_button.IsEnabled = true;
-            TrackingWindow win2 = new TrackingWindow();
-            win2.use_dasher = (bool)chkDasher.IsChecked;
+            TrackingWindow.use_dasher = useVM;
+            TrackingWindow win2 = new TrackingWindow();            
+            //win2.use_dasher = useVM;
             win2.Show();
 
 
@@ -57,8 +59,6 @@ namespace Masterarbeit
 
             //await t;
             //show_result(t.Result);
-
-
         }
 
 
@@ -67,7 +67,7 @@ namespace Masterarbeit
         {
             start_button.IsEnabled = true;
             stop_button.IsEnabled = false;
-            starter.keep_running = false;
+           // starter.keep_running = false;
         }
 
         delegate void set_result(string type);
@@ -77,6 +77,9 @@ namespace Masterarbeit
             //label.Content =type;
         }
 
-    
+        private void chkVM_Checked(object sender, RoutedEventArgs e)
+        {
+            useVM = (bool)((CheckBox)sender).IsChecked;
+        }
     }
 }

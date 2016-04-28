@@ -11,7 +11,7 @@
         <Button x:Name="stop_button" Content="Stop Tracker" HorizontalAlignment="Left" Margin="196,169,0,0" VerticalAlignment="Top" Width="90" IsEnabled="False" Click="stop_button_Click"/>
         <CheckBox x:Name="checkBox" Content="Remove Errors" HorizontalAlignment="Left" Margin="322,129,0,0" VerticalAlignment="Top" Width="123" Checked="checkBox_Checked" Unchecked="checkBox_Unchecked"/>
         <Label x:Name="label" x:FieldModifier="public" Content="Label" HorizontalAlignment="Left" Margin="10,266,0,0" VerticalAlignment="Top" Width="472" Height="45" />
-        <CheckBox x:Name="chkDasher" Content="Use Dasher" HorizontalAlignment="Left" Margin="322,174,0,0" VerticalAlignment="Top" Width="123" />
+        <CheckBox x:Name="chkVM" Content="Use VM" HorizontalAlignment="Left" Margin="322,174,0,0" VerticalAlignment="Top" Width="123" Checked="chkVM_Checked" />
 
     </Grid>
 

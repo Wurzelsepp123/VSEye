@@ -1,46 +1,83 @@
-﻿using System;
+﻿using SPOCK.UIElements;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 
-namespace TestDasherScket
+namespace CarUI
 {
    public class DasherInterface
    {
-      const int c_dasherControlPort = 20320;
-      const int c_dasherRetrievalPort = 12345;
-
-      bool m_running;
-      Canvas m_canvas;
+      const int c_dasherCoordPort = 20320;
+      const int c_dasherRetrievalPort = 20321;
+      const int c_dasherControlPort = 20319;
 
       const string c_appName = "Document1 - Word";
 
-      UdpClient m_letterSendClient;
+      bool m_running;
+      EyeMovementCanvas m_canvas;
+
+      string m_dasherHost;
+
+      UdpClient m_coordClient;
       TcpClient m_letterRetrievalClient;
-      public DasherInterface(Canvas canvas, string dasherHost)
+      TcpClient m_controlClient;
+      private double yOffset = 0.00;
+      private double xOffset = 0.00;
+
+      public DasherInterface(EyeMovementCanvas canvas, string dasherHost)
       {
          m_canvas = canvas;
-            m_letterSendClient = new UdpClient(dasherHost, c_dasherControlPort);
-         m_letterRetrievalClient = new TcpClient();
+         m_dasherHost = dasherHost;
+         m_coordClient = new UdpClient(m_dasherHost, c_dasherCoordPort);
 
-         Task.Run(() => startTcpClient(dasherHost));
+         m_letterRetrievalClient = new TcpClient();
+         Task.Run(() => startLetterRetrievClient());
+
+         m_controlClient = new TcpClient();
+         Task.Run(() => connectControlClient());
+      }
+
+      private void connectControlClient()
+      {
+         while (!m_controlClient.Connected)
+         {
+            Console.WriteLine("Try to connect control client!");
+            try
+            {
+               m_controlClient.Connect(m_dasherHost, c_dasherControlPort);
+            }
+            catch (SocketException e)
+            {
+               Console.WriteLine("Cannot connect! Retrying in 1 Second!");
+               Thread.Sleep(1000);
+            }
+         }
       }
 
       public void startDasher()
       {
          if (m_running == true)
             return;
+         if (!m_controlClient.Connected)
+            return;
+
+         byte[] dgram = Encoding.ASCII.GetBytes("s");
+         m_controlClient.GetStream().Write(dgram, 0, 1);
+         Thread.Sleep(500);
+
          doSendPosition(new Point(0.5, 0.5));
          Task.Run(() =>
          {
             Thread.Sleep(1600);
-            m_canvas.MouseMove += SendGazeCoordsToDasher;
+            m_canvas.EyeMove += SendGazeCoordsToDasher;
          });
          m_running = true;
       }
@@ -49,8 +86,15 @@ namespace TestDasherScket
       {
          if (m_running == false)
             return;
+         if (!m_controlClient.Connected)
+            return;
+
+         byte[] dgram = Encoding.ASCII.GetBytes("q");
+         m_controlClient.GetStream().Write(dgram, 0, 1);
+         Thread.Sleep(500);
+
          m_running = false;
-         m_canvas.MouseMove -= SendGazeCoordsToDasher;
+         m_canvas.EyeMove -= SendGazeCoordsToDasher;
          doSendPosition(new Point(0.5, 0.5));
          Task.Run(() =>
          {
@@ -60,10 +104,13 @@ namespace TestDasherScket
          });
       }
 
-      private void SendGazeCoordsToDasher(Object sender, MouseEventArgs args)
+      private void SendGazeCoordsToDasher(Object sender, EyeMovedEventArgs args)
       {
-         var pos = (args.GetPosition(sender as UIElement));
+         var pos = (m_canvas.PointFromScreen(args.getPosition()));
+
          pos.X /= m_canvas.Width;
+         pos.X = 1.0 - pos.X;
+
          pos.Y /= m_canvas.Height;
          doSendPosition(pos);
       }
@@ -73,59 +120,66 @@ namespace TestDasherScket
          string message;
          byte[] dgram;
 
+         pos.X += xOffset;
+         pos.Y += yOffset;
+
          message = "x " + pos.X + "\n";
          message = message.Replace('.', ',');
          dgram = Encoding.ASCII.GetBytes(message);
-            m_letterSendClient.Send(dgram, dgram.Length);
+         m_coordClient.Send(dgram, dgram.Length);
 
          message = "y " + pos.Y + "\n";
          message = message.Replace('.', ',');
          dgram = Encoding.ASCII.GetBytes(message);
-            m_letterSendClient.Send(dgram, dgram.Length);
+         m_coordClient.Send(dgram, dgram.Length);
       }
 
-      void startTcpClient(string hostname)
+      void startLetterRetrievClient()
       {
-         while (!m_letterRetrievalClient.Connected)
+         while (true)
          {
-            Console.WriteLine("Try to connect to Server!");
-            try
+            m_letterRetrievalClient = new TcpClient();
+            while (!m_letterRetrievalClient.Connected)
             {
-               m_letterRetrievalClient.Connect(hostname, c_dasherRetrievalPort);
+               Console.WriteLine("Try to connect to coord receiver!");
+               try
+               {
+                  m_letterRetrievalClient.Connect(m_dasherHost, c_dasherRetrievalPort);
+               }
+               catch (SocketException e)
+               {
+                  Console.WriteLine("Cannot connect! Retrying...");
+               }
             }
-            catch (SocketException e)
-            {
-               Console.WriteLine("Cannot connect! Retrying in 1 Second!");
-            }
-         }
-         Console.WriteLine("Connected to server!");
-         var stream = m_letterRetrievalClient.GetStream();
+            Console.WriteLine("Connected to server!");
+            var stream = m_letterRetrievalClient.GetStream();
 
-         int length = 0;
-         do
-         {
-            byte[] buffer = new byte[64];
-            try
+            int length = 0;
+            do
             {
-               length = stream.Read(buffer, 0, buffer.Length);
-            }
-            catch (IOException)
-            {
-               break;
-            }
-            if (length != 0 && buffer[0] == 8)
-            {
-               Console.WriteLine("Received Data: Backspace");
-               sendBackspaceToApplication();
-            }
-            else
-            {
-               string message = Encoding.ASCII.GetString(buffer);
-               message = message.TrimEnd('\0');
-               Console.WriteLine("Received Data: " + message);
-               sendStringToApplication(message);
-            }
-         } while (length != 0);
+               byte[] buffer = new byte[64];
+               try
+               {
+                  length = stream.Read(buffer, 0, buffer.Length);
+               }
+               catch (IOException)
+               {
+                  break;
+               }
+               if (length != 0 && buffer[0] == 8)
+               {
+                  Console.WriteLine("Received Data: Backspace");
+                  sendBackspaceToApplication();
+               }
+               else
+               {
+                  string message = Encoding.ASCII.GetString(buffer);
+                  message = message.TrimEnd('\0');
+                  Console.WriteLine("Received Data: " + message);
+                  sendStringToApplication(message);
+               }
+            } while (length != 0);
+         }
       }
 
       [DllImport("user32.dll", EntryPoint = "FindWindowEx")]
@@ -135,15 +189,21 @@ namespace TestDasherScket
 
       void sendStringToApplication(string text, string appName = c_appName)
       {
+         var wordProcess = Process.GetProcesses().First(x => { return x.ProcessName.Contains("winword"); });
+         IntPtr window = wordProcess.MainWindowHandle;
+
+
          //IntPtr window = FindWindow(null, appName);
-         //SetForegroundWindow(window);
-         //System.Windows.Forms.SendKeys.SendWait(text);
+         SetForegroundWindow(window);
+         System.Windows.Forms.SendKeys.SendWait(text);
       }
       void sendBackspaceToApplication(string appName = c_appName)
       {
+         var wordProcess = Process.GetProcesses().First(x => { return x.ProcessName.Contains("winword"); });
+         IntPtr window = wordProcess.MainWindowHandle;
          //IntPtr window = FindWindow(null, appName);
-         //SetForegroundWindow(window);
-         //System.Windows.Forms.SendKeys.SendWait("{BS}");
+         SetForegroundWindow(window);
+         System.Windows.Forms.SendKeys.SendWait("{BS}");
       }
    }
 }

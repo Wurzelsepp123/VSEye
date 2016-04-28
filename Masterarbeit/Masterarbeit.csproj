@@ -102,17 +102,21 @@
       <HintPath>..\packages\Accord.Statistics.3.0.2\lib\net45\Accord.Statistics.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Classifier">
-      <HintPath>..\..\..\..\SPOCK\application\CoreLib\Classifier\obj\x64\Debug\Classifier.dll</HintPath>
+    <Reference Include="Classifier, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SPOCK\application\CoreLib\x64\Debug\Classifier.dll</HintPath>
     </Reference>
-    <Reference Include="Controls">
-      <HintPath>..\..\..\..\SPOCK\application\CoreLib\Controls\obj\x64\Debug\Controls.dll</HintPath>
+    <Reference Include="Controls, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SPOCK\experimental\Controls\obj\x64\Debug\Controls.dll</HintPath>
     </Reference>
-    <Reference Include="EyeCoordsReceiver">
+    <Reference Include="EyeCoordsReceiver, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\SPOCK\application\CoreLib\GazeReceiver\obj\x64\Debug\EyeCoordsReceiver.dll</HintPath>
     </Reference>
-    <Reference Include="EyeMovementUIElements">
-      <HintPath>..\..\..\..\SPOCK\application\CoreLib\UIElements\obj\x64\Debug\EyeMovementUIElements.dll</HintPath>
+    <Reference Include="EyeMovementUIElements, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SPOCK\application\CoreLib\x64\Debug\EyeMovementUIElements.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -143,6 +147,7 @@
     </ApplicationDefinition>
     <Compile Include="DasherInterface.cs" />
     <Compile Include="MouseEmulator.cs" />
+    <Compile Include="MouseEmulatorControl.cs" />
     <Compile Include="start.cs" />
     <Compile Include="TrackingWindow.xaml.cs">
       <DependentUpon>TrackingWindow.xaml</DependentUpon>

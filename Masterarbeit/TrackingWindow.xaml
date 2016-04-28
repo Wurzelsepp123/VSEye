@@ -2,15 +2,22 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"    
         xmlns:gaze="clr-namespace:SPOCK.UIElements;assembly=EyeMovementUIElements"           
-        Title="TrackingWindow" Width="1920" Height="1200" ResizeMode="NoResize" WindowStyle="None"
-         WindowState="Maximized"
-        >
-    <gaze:EyeMovementCanvas x:Name="MainCanvas" Background="#FF490000" >
-        <TextBox x:Name="ParticipantID_textBox" Height="131" Canvas.Left="773" TextWrapping="Wrap" Text="" Canvas.Top="221" Width="354" BorderThickness="0" FontSize="80" FontWeight="Bold" TextAlignment="Center" />
+        Title="TrackingWindow" Width="1920" Height="1000" ResizeMode="NoResize" WindowStyle="None"  AllowsTransparency="True"
+        Background="Transparent"  Topmost="False">
+        
+    <Canvas>
+        <Canvas.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform ScaleX="-1" ScaleY="1"/>
+                <TranslateTransform X="1920" Y="0" />
+            </TransformGroup>
+        </Canvas.RenderTransform>
+        <gaze:EyeMovementCanvas x:Name="MainCanvas" Background="Black" >       
       
     </gaze:EyeMovementCanvas>
+    <gaze:EyeMovementCanvas Background="White" x:Name="DasherCanvas"/>
+    </Canvas>
     <Window.Resources>
-        <Ellipse x:Key="GazeMarker" Width="15" Height="15" Fill="Blue" />
-        
+        <Ellipse x:Key="GazeMarker" Width="15" Height="15" Fill="Blue" />        
     </Window.Resources>
 </Window>
