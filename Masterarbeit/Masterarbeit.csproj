@@ -104,7 +104,7 @@
     </Reference>
     <Reference Include="Classifier, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\SPOCK\application\CoreLib\x64\Debug\Classifier.dll</HintPath>
+      <HintPath>..\..\..\..\SPOCK\experimental\Classifier\obj\x64\Debug\Classifier.dll</HintPath>
     </Reference>
     <Reference Include="Controls, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
@@ -112,11 +112,11 @@
     </Reference>
     <Reference Include="EyeCoordsReceiver, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\SPOCK\application\CoreLib\GazeReceiver\obj\x64\Debug\EyeCoordsReceiver.dll</HintPath>
+      <HintPath>..\..\..\..\SPOCK\experimental\EyeCoordsReceiver\obj\x64\Debug\EyeCoordsReceiver.dll</HintPath>
     </Reference>
     <Reference Include="EyeMovementUIElements, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\SPOCK\application\CoreLib\x64\Debug\EyeMovementUIElements.dll</HintPath>
+      <HintPath>..\..\..\..\SPOCK\experimental\EyeMovementUIElements\obj\x64\Debug\EyeMovementUIElements.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -148,7 +148,6 @@
     <Compile Include="DasherInterface.cs" />
     <Compile Include="MouseEmulator.cs" />
     <Compile Include="MouseEmulatorControl.cs" />
-    <Compile Include="start.cs" />
     <Compile Include="TrackingWindow.xaml.cs">
       <DependentUpon>TrackingWindow.xaml</DependentUpon>
     </Compile>

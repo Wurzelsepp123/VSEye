@@ -11,7 +11,7 @@ using System.Diagnostics;
 
 namespace SPOCK.Receivers
 {
-    public class MouseEmulator : GazeReceiver
+    public class MouseEmulator : EyeReceiver
     {
         //       public delegate int HookProc(int nCode, IntPtr wParam, IntPtr lParam);
         //       private int hHook = 0;

@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using System.Net.Sockets;
 using SPOCK.Receivers;
 using SPOCK.UIElements;
-using SPOCK.Classifiers;
+//using SPOCK.Classifiers;
 using SPOCK.Controls;
 using System.Windows.Media.Animation;
 using CarUI;
@@ -40,19 +40,22 @@ namespace Masterarbeit
 
         const int dasherHeight = 500;
 
-        
-        GazeReceiver m_Receiver = GazeReceiver.Instance;
+
+        //GazeReceiver m_Receiver = GazeReceiver.Instance;
+        EyeReceiver m_Receiver = EyeReceiver.Instance;
         sp_classifier m_classifier = sp_classifier.Instance;
 
 
         Window m_dasherCoverWindow = new Window()
         {
+            //Only works if height of mainScreen==workingscreen else top has offset
             Width = Screen.AllScreens[indexWorkingScreen].Bounds.Width,
             Height = dasherHeight,
             Left = ScreenSizes[indexMainScreen].Width,
-            Top = Screen.AllScreens[indexWorkingScreen].Bounds.Height - dasherHeight,
+            //Top = Screen.AllScreens[indexWorkingScreen].Bounds.Height - dasherHeight,
+            Top = Screen.AllScreens[indexMainScreen].Bounds.Height - dasherHeight,
             Background = Brushes.Black,
-            //Topmost = true,
+            Topmost = true,
             WindowStyle = WindowStyle.None,
             ResizeMode = ResizeMode.NoResize,
         };
@@ -63,10 +66,13 @@ namespace Masterarbeit
             Height = 10,
             Fill = Brushes.Blue,
         };
-       
+
         DasherInterface di;
-        int threshold;
+
         static public bool use_dasher;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         public TrackingWindow()
         {
@@ -75,6 +81,15 @@ namespace Masterarbeit
             Closed += (_a, _b) => Environment.Exit(0);
 
 
+
+            Process[] VMProcess = Process.GetProcessesByName("vmplayer");
+            if (VMProcess.Length > 0)
+            {
+                IntPtr VMwindow = VMProcess[0].MainWindowHandle;
+                int offset_toolbar = 50;
+                MoveWindow(VMwindow, Screen.AllScreens[indexMainScreen].Bounds.Width + Screen.AllScreens[indexWorkingScreen].Bounds.Width, Screen.AllScreens[indexGazeScreen].Bounds.Height - (dasherHeight+ offset_toolbar), Screen.AllScreens[indexGazeScreen].Bounds.Width,dasherHeight+ offset_toolbar, true);
+            }
+
             SizeChanged += (sender, args) =>
             {
                 MainCanvas.Width = args.NewSize.Width;
@@ -82,42 +97,38 @@ namespace Masterarbeit
             };
 
 
-         
+
 
 
             DasherCanvas.Background = new SolidColorBrush() { Color = Colors.White, Opacity = 0.01 };
 
             this.Top = 0;
-            this.Left = ScreenSizes[indexMainScreen].Width; //+ ScreenSizes[indexWorkingScreen].Width;
+            this.Left = ScreenSizes[indexMainScreen].Width + ScreenSizes[indexWorkingScreen].Width;
 
-            //for 3 screens
-            //this.Width = ScreenSizes[indexGazeScreen].Width;
-            //this.Height = ScreenSizes[indexWorkingScreen].Height;
-            this.Width = ScreenSizes[indexWorkingScreen].Width;
+
+            this.Width = ScreenSizes[indexGazeScreen].Width;
             this.Height = ScreenSizes[indexWorkingScreen].Height;
 
-            //DasherCanvas.Width = ScreenSizes[indexGazeScreen].Width;
-            DasherCanvas.Width = ScreenSizes[indexWorkingScreen].Width;
+
+            DasherCanvas.Width = ScreenSizes[indexGazeScreen].Width;
             DasherCanvas.Height = dasherHeight;
             DasherCanvas.RenderTransform = new TranslateTransform(0, Height - dasherHeight);
 
-            Canvas.SetZIndex(MainCanvas, 100);
-            
+            Canvas.SetZIndex(MainCanvas, 10000);
+
             di = new DasherInterface(DasherCanvas, "192.168.248.128");
 
 
 
-            //Thread.Sleep(1000);
-            //EyeReceiver.Instance.Start();
+           
 
             m_Receiver.Start();
-            threshold = 100;
-            MainCanvas.EyeMove += (_s, _a) =>
+
+            Ellipse gazeDot2 = new Ellipse()
             {
-                var p = MainCanvas.PointToScreen(_a.getPosition());
-                gazeDot.RenderTransform = new TranslateTransform(p.X, p.Y);
-                if (!MainCanvas.Children.Contains(gazeDot))
-                    MainCanvas.Children.Add(gazeDot);
+                Width = 10,
+                Height = 10,
+                Fill = Brushes.Red,
             };
 
             // KeyDown += InitScreenKeyDown;
@@ -126,19 +137,14 @@ namespace Masterarbeit
                 switch (args.Key)
                 {
                     case Key.Enter:
-                        GazeReceiver.Instance.Calibrate(MainCanvas, 9, 1500, () =>
+                        EyeReceiver.Instance.Calibrate(MainCanvas, 9, 1500, () =>
                         {
                             Dispatcher.Invoke(() =>
                             {
                                 MainCanvas.Background = Brushes.Black;
-                                GazeReceiver.Instance.Start();
+                                EyeReceiver.Instance.Start();
 
-                                Ellipse gazeDot2 = new Ellipse()
-                                {
-                                    Width = 10,
-                                    Height = 10,
-                                    Fill = Brushes.Blue,
-                                };
+                                
                                 MainCanvas.EyeMove += (_s, _a) =>
                                 {
                                     var p = MainCanvas.PointToScreen(_a.getPosition());
@@ -146,7 +152,7 @@ namespace Masterarbeit
                                     if (!MainCanvas.Children.Contains(gazeDot2))
                                         MainCanvas.Children.Add(gazeDot2);
                                 };
-                               // SwitchToDesktop();
+                                SwitchToDesktop();
                             });
                         });
                         break;
@@ -154,7 +160,7 @@ namespace Masterarbeit
                         SwitchToDesktop();
                         break;
                     case Key.D2:
-                         SwitchToWordMainMenu();
+                        SwitchToWordMainMenu();
                         break;
                     case Key.D3:
                         SwitchToWordWriting();
@@ -162,6 +168,26 @@ namespace Masterarbeit
                     case Key.Escape:
                         SwitchToDesktop();
                         break;
+                    case Key.D4:
+                        EnableDasher();
+                        break;
+                        //spawn spbutton on dt target
+                    case Key.D5:
+                      
+                            MainCanvas.EyeMove += (_s, _a) =>
+                         {
+                             var p = MainCanvas.PointToScreen(_a.getPosition());
+                             gazeDot2.RenderTransform = new TranslateTransform(p.X, p.Y);
+                             if (!MainCanvas.Children.Contains(gazeDot2))
+                                 MainCanvas.Children.Add(gazeDot2);
+                         };
+
+
+
+                        MainCanvas.EyeEnter += startDT2SP;
+                        MainCanvas.EyeLeave += startDT2SP;
+                        break;
+
                     //case Key.Left:
                     //   MouseX -= Multiplyer;
                     //   MouseX = Math.Max(0, MouseX);
@@ -189,28 +215,23 @@ namespace Masterarbeit
 
 
             //FocusManager.SetFocusedElement(this, ParticipantID_textBox);
-            gazeDot.Visibility = Visibility.Visible;
+            // gazeDot.Visibility = Visibility.Visible;
 
-            DasherCanvas.EyeMove += setDot;
-            MainCanvas.EyeMove += setDot;
-            MainCanvas.MouseUp += MouseClicked;
+            //DasherCanvas.EyeMove += setDot;
+            //MainCanvas.EyeMove += setDot;
+            //MainCanvas.MouseUp += MouseClicked;
             // MainCanvas.MouseDown += MouseClicked;
 
 
 
             //MainCanvas.EyeMove += DefocusSPCKButton;
-
-
-
-            Thread workerThread;
-            workerThread = new Thread(SPeverywhere);
-            workerThread.Name = "DwellTimeThread";
-            workerThread.IsBackground = true;
-            workerThread.Start();
+                         
+            
 
 
 
         }
+       
         void SwitchToDesktop()
         {
             DisableDasher();
@@ -223,8 +244,8 @@ namespace Masterarbeit
             };
 
             var but = new DTButton(new Point(120, 120), 80, 100, ButtonBrush, 1000);
-            // but.Click += EmulateDoubleClickOnWorkingScreen;
-            // but.Click += (a, b) => SwitchToWordMainMenu();
+            but.Click += EmulateDoubleClickOnWorkingScreen;
+            but.Click += (a, b) => SwitchToWordMainMenu();
 
             MainCanvas.Children.Add(but);
 
@@ -232,13 +253,13 @@ namespace Masterarbeit
         private void EnableDasher()
         {
             m_dasherCoverWindow.Show();
-            MainCanvas.Height = ScreenSizes[1].Height - dasherHeight;
+            MainCanvas.Height = ScreenSizes[indexGazeScreen].Height - dasherHeight;
             di.startDasher();
         }
 
         private void DisableDasher()
         {
-            MainCanvas.Height = ScreenSizes[1].Height;
+            MainCanvas.Height = ScreenSizes[indexGazeScreen].Height;
             m_dasherCoverWindow.Hide();
             di.stopDasher();
         }
@@ -285,7 +306,7 @@ namespace Masterarbeit
             ButtonGroup group = new ButtonGroup(new Point(1820, 0), 94, 50, buttons, new Rect(1500, 30, 400, 200), MainCanvas);
             MainCanvas.Children.Add(group);
         }
-        
+
         private DTButton newDoubleClickDTButton(double x, double y, double width, double height)
         {
             var buttonBrush = new SolidColorBrush()
@@ -300,8 +321,10 @@ namespace Masterarbeit
         private void EmulateDoubleClickOnWorkingScreen(object sender, RoutedEventArgs args)
         {
             var but = sender as EyeMovementCanvas;
-            var pos = PointToWorkingScreen(but.PointToScreen(new Point(but.Width / 2, but.Height / 2)));//but.GetScreenPosition(but.Midpoint, MainCanvas));
 
+            Console.Write(but.PointToScreen(new Point(but.Width / 2, but.Height / 2)));
+            var pos = PointToWorkingScreen(but.PointToScreen(new Point(but.Width / 2, but.Height / 2)));//but.GetScreenPosition(but.Midpoint, MainCanvas));
+            //doubleClick((int)pos.X, (int)pos.Y+120);
             MouseEmulatorControl.Move(pos.X, pos.Y);
             MouseEmulatorControl.DoubleClick(pos.X, pos.Y);
         }
@@ -316,31 +339,46 @@ namespace Masterarbeit
 
         private Point PointToWorkingScreen(Point pointOnGazeScreen)
         {
-            return new Point((2 * ScreenSizes[indexMainScreen].Width + ScreenSizes[indexWorkingScreen].Width) - pointOnGazeScreen.X, pointOnGazeScreen.Y);
+            return new Point((2 * (ScreenSizes[indexMainScreen].Width + ScreenSizes[indexWorkingScreen].Width)) - pointOnGazeScreen.X, pointOnGazeScreen.Y+120);
         }
 
 
 
+        private volatile bool _shouldStop;
 
-
-        private void SPeverywhere()
+        private void startDT2SP(object sender, RoutedEventArgs e)
+        {           
+            Thread workerThread;
+            if (e is EyeEnteredEventArgs)
+            {
+                _shouldStop = false;
+                workerThread = new Thread(DT2SPthread);
+                workerThread.Name = "DwellTimeThread";
+                workerThread.IsBackground = true;
+                workerThread.Start();
+            }
+            else if (e is EyeLeftEventArgs)
+                _shouldStop = true;
+          
+        }
+        private void DT2SPthread()
         {
             int cnt = 0;
             bool activeDwell = false;
+           
             Point startPosDwell = new Point(0, 0);
-            while (true)
+            while (!_shouldStop)
             {
                 //Stopwatch busyWaitingSW = new Stopwatch();
                 //busyWaitingSW.Start();
                 //while (busyWaitingSW.ElapsedMilliseconds < 16)
                 //{ }
-                //busyWaitingSW.Reset();
-
+                //busyWaitingSW.Reset();                
 
                 //detect dwellTime (500ms)
                 if (sp_classifier.Instance.Result == sp_classifier.Gesture.FIX && activeDwell == false)
                 {
-                    startPosDwell = new Point(sp_classifier.Instance.curPos.x, sp_classifier.Instance.curPos.y);
+                    startPosDwell = new Point(sp_classifier.Instance.curPos.x, sp_classifier.Instance.curPos.y);                    
                     activeDwell = true;
                     cnt++;
                 }
@@ -357,17 +395,16 @@ namespace Masterarbeit
                 //dwell detected
                 if ((cnt >= 5) && ((startPosDwell - new Point(sp_classifier.Instance.curPos.x, sp_classifier.Instance.curPos.y)).Length < 10))
                 {
-                    
+
                     //Dispatcher.Invoke(() =>
                     //{
                     //    SPOCKButton newButton = new SPOCKButton(startPosDwell, 200, 200, Brushes.RosyBrown, 2);
                     //    MainCanvas.Children.Add(newButton);
                     //});
-                    if (startPosDwell.X > 0 && startPosDwell.X < 1920 && startPosDwell.Y > 0 && startPosDwell.Y < 1200)
-                    {
+                    
+                        Dispatcher.Invoke(() => spawnButton(startPosDwell));
+                    //spawnButton(startPosDwell);
 
-                    }
-                    Dispatcher.Invoke(() => spawnButton(startPosDwell));
 
                     //Dispatcher.Invoke(() => removeButton());
 
@@ -379,22 +416,28 @@ namespace Masterarbeit
             }
         }
         private void spawnButton(Point Position)
-        {
-            Position.X -= 100;
-            Position.Y -= 100;
-            SPOCKButton newButton = new SPOCKButton(Position, 200, 200, Brushes.RosyBrown, 2);
-            newButton.Name = "DwellButton";
-            newButton.EyeLeave += KillSPCKButton;
-            var SpockBox = (UIElement)LogicalTreeHelper.FindLogicalNode(MainCanvas, "DwellButton");
+        {       
 
-            if (SpockBox == null)
+            var ButtonBrush = new SolidColorBrush()
             {
-
-                MainCanvas.Children.Add(newButton);
-
-            }
-
-
+                Color = Colors.RosyBrown,
+                Opacity = 0.5
+            };
+            //Point pos = PointFromScreen(Position);
+            Position.X =1920-(Position.X- (Screen.AllScreens[indexMainScreen].Bounds.Width + Screen.AllScreens[indexWorkingScreen].Bounds.Width));
+            //Place button on cursor pos
+            Position.X -= 40;
+            Position.Y -= 50;
+            var but = new SPOCKButton(Position, 80, 100, ButtonBrush, 5);
+            but.Name="DwellButton";
+            but.EyeLeave += KillSPCKButton;
+            var CurBut = (UIElement)LogicalTreeHelper.FindLogicalNode(MainCanvas, "DwellButton");
+            but.Click += EmulateDoubleClickOnWorkingScreen;
+            //but.Click += (a, b) => SwitchToWordMainMenu();
+            
+            
+            if(CurBut==null)
+            MainCanvas.Children.Add(but);
 
 
 
@@ -468,7 +511,7 @@ namespace Masterarbeit
                     {
 
                         Console.WriteLine("Q");
-                      
+
                     }
                 }
 
@@ -533,8 +576,7 @@ namespace Masterarbeit
 
 
         void doubleClick(int x, int y)
-        {
-            x = -x;
+        {            
             Console.Write("Double Click on: {0},{1}", x, y);
 
             var inputMouseDown = new INPUT();
@@ -580,6 +622,7 @@ namespace Masterarbeit
 
 
     }
+
 }
 static class UIListExtension
 {
@@ -594,3 +637,4 @@ static class UIListExtension
         return par.GetScreenPosition(new Point(par.Position.X + element.Position.X, par.Position.Y + element.Position.Y), MainCanvas);
     }
 }
+

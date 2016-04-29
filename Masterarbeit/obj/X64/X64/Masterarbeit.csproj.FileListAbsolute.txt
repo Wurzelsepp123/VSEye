@@ -52,3 +52,4 @@ C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj
 C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\x64\X64\Masterarbeit.csproj.GenerateResource.Cache
 C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\x64\X64\Masterarbeit.exe
 C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\x64\X64\Masterarbeit.pdb
+C:\Users\dre\documents\visual studio 2015\Projects\Masterarbeit\Masterarbeit\obj\x64\X64\Masterarbeit.csproj.Masterarbeit.exe.config
